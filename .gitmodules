@@ -1,0 +1,3 @@
+[submodule "ai-daily-digest"]
+	path = ai-daily-digest
+	url = https://github.com/zhalice2011/ai-daily.git
