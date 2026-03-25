@@ -1,0 +1,145 @@
+name: Daily 2+4 Workflow
+
+on:
+  schedule:
+    - cron: '30 1 * * *'  # 每天 UTC 01:30 = 北京时间 09:30
+  workflow_dispatch:  # 手动触发
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ========== 2 个开源项目 ==========
+  
+  trend-radar:
+    name: TrendRadar (Multi-source)
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.fetch.outputs.status }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: pip install feedparser requests beautifulsoup4
+    
+    - name: Fetch TrendRadar News
+      id: fetch
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+        INTERESTS: ${{ secrets.INTERESTS }}
+      run: |
+        python sources/trend_radar.py --output output/trend_radar.md
+    
+    - name: Upload Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: trend-radar
+        path: output/trend_radar.md
+
+  ai-daily-digest:
+    name: AI Daily Digest (92 Blogs)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies (AI Daily Digest)
+      run: |
+        cd ai-daily-digest
+        pip install -r requirements.txt
+    
+    - name: Fetch AI Daily Digest
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+      run: |
+        cd ai-daily-digest
+        python scripts/digest.py --hours 24 --top-n 15 --lang en --output ../output/ai_daily_digest.md
+    
+    - name: Upload Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-daily-digest
+        path: output/ai_daily_digest.md
+
+  # ========== 4 个订阅日报 ==========
+  
+  subscribe-sources:
+    name: 4 Subscribe Sources
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install dependencies
+      run: pip install feedparser requests beautifulsoup4
+    
+    - name: Fetch 4 Subscribes
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+      run: |
+        python sources/subscribe_fetch.py --output output/subscribes/
+    
+    - name: Upload Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: subscribes
+        path: output/subscribes/
+
+  # ========== JARVIS 整合 ==========
+  
+  jarvis-merge:
+    name: JARVIS Merge & Push
+    runs-on: ubuntu-latest
+    needs: [trend-radar, ai-daily-digest, subscribe-sources]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: '*'
+        merge-multiple: true
+        path: output/
+    
+    - name: Install dependencies
+      run: pip install requests dashscope
+    
+    - name: JARVIS Merge & Push to Feishu
+      env:
+        DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        INTERESTS: ${{ secrets.INTERESTS }}
+      run: |
+        python jarvis/merge_and_push.py
+    
+    - name: Commit Full Report
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add output/
+        git diff --staged --quiet || git commit -m "Daily update: $(date +%Y-%m-%d)"
+        git push || echo "No changes"
