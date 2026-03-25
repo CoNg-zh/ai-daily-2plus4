@@ -59,7 +59,7 @@ jobs:
     - name: Install dependencies (AI Daily Digest)
       run: |
         cd ai-daily-digest
-        pip install -r requirements.txt
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install bun requests feedparser; fi
     
     - name: Fetch AI Daily Digest
       env:
