@@ -115,8 +115,6 @@ def main():
         'TrendRadar': read_file('output/trend_radar.md'),
         'AI Daily Digest': read_file('output/ai_daily_digest.md'),
         '智语观潮': read_file('output/subscribes/智语观潮.md'),
-        'AI 趋势': read_file('output/subscribes/AI 趋势.md'),
-        'Inference Brief': read_file('output/subscribes/Inference Brief.md'),
     }
     
     # 过滤空内容

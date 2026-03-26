@@ -7,30 +7,25 @@
 import os
 from datetime import datetime
 
-# 配置数据源（RSS + 邮件订阅）
+# 配置数据源（RSS 订阅）
 SOURCES = [
     {
         'name': '智语观潮',
         'type': 'rss',
-        'rss_url': 'https://ai.daily.yangsir.net/rss.xml',  # ✅ 已验证
+        'rss_url': 'https://ai.daily.yangsir.net/rss.xml',  # ✅ 已验证可用
     },
-    {
-        'name': 'AI 趋势',
-        'type': 'rss',
-        'rss_url': 'https://www.aitrend.us/feed.json',  # ✅ 已验证
-    },
-    {
-        'name': 'Inference Brief',
-        'type': 'rss',
-        'rss_url': 'https://inferencebrief.ai/feed.json',  # ✅ 已验证
-    },
-    # 爱窝啦 AI 日报：邮件订阅（需要配置邮箱）
+    # AI 趋势：RSS 地址 404，暂不配置
     # {
-    #     'name': '爱窝啦 AI 日报',
-    #     'type': 'email',
-    #     'email_subject': '爱窝啦 AI 日报',
-    #     'email_account': 'your-email@gmail.com',  # 待配置
-    # }
+    #     'name': 'AI 趋势',
+    #     'type': 'rss',
+    #     'rss_url': 'https://www.aitrend.us/feed.json',
+    # },
+    # Inference Brief：RSS 地址 403，暂不配置
+    # {
+    #     'name': 'Inference Brief',
+    #     'type': 'rss',
+    #     'rss_url': 'https://inferencebrief.ai/feed.json',
+    # },
 ]
 
 def fetch_rss(rss_url):
