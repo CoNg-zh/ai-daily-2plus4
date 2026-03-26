@@ -106,9 +106,11 @@ jobs:
   # ========== JARVIS 整合 ==========
   
   jarvis-merge:
-    name: JARVIS Merge & Push
+    name: JARVIS Merge & Save
     runs-on: ubuntu-latest
     needs: [trend-radar, ai-daily-digest, subscribe-sources]
+    outputs:
+      report_path: ${{ steps.save.outputs.report_path }}
     
     steps:
     - uses: actions/checkout@v4
@@ -128,13 +130,14 @@ jobs:
     - name: Install dependencies
       run: pip install requests dashscope
     
-    - name: JARVIS Merge & Push to Feishu
+    - name: JARVIS Merge (Save Only)
+      id: save
       env:
         DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
         INTERESTS: ${{ secrets.INTERESTS }}
       run: |
-        python jarvis/merge_and_push.py
+        REPORT_PATH=$(python jarvis/merge_only.py)
+        echo "report_path=$REPORT_PATH" >> $GITHUB_OUTPUT
     
     - name: Commit Full Report
       run: |
