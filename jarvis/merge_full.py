@@ -19,54 +19,68 @@ def read_file(path):
         return ""
 
 def jarvis_merge(all_contents, interests=None):
-    """JARVIS 智能整合"""
+    """JARVIS 智能整合 - 每个数据源输出 10 条精选"""
     
     prompt = f"""你是一名专业的 AI 资讯编辑 JARVIS。
 
 请整合以下多个来源的 AI 新闻，生成一份详细版日报。
 
 ## 要求
-1. 去重：合并相似内容
-2. 评分：按重要性打分（1-5 星）
-3. 分类：分为"重磅新闻"、"技术更新"、"行业应用"、"研究论文"
-4. 精选：每个分类选 3-5 条最重要的
+1. **每个数据源选 10 条**：TrendRadar 10 条 + AI Daily Digest 10 条 + 订阅源各 10 条
+2. 去重：合并相似内容
+3. 评分：按重要性打分（1-5 星）
+4. 分类：分为"重磅新闻"、"技术更新"、"行业应用"、"研究论文"
 5. 格式：Markdown
+6. **只提取真实新闻**，忽略测试/配置/系统状态等内容
 
 ## 用户兴趣
 {interests or 'AI, Agent, 大模型，OpenClaw'}
 
 ## 数据来源
 
-{all_contents[:10000]}
+{'\n\n'.join(all_contents)[:15000]}
 
 ## 输出格式
 
 # AI Daily 2+4 - YYYY-MM-DD
 
 **生成时间**: YYYY-MM-DD HH:MM
-**数据来源**: 来源列表
-**总计**: X 条
+**数据来源**: TrendRadar, AI Daily Digest, 智语观潮，AI 趋势，Inference Brief
+**总计**: 约 50 条
 
 ---
 
-## 🔥 重磅新闻
+## 🔥 重磅新闻（10 条）
 
 1. **标题** ⭐⭐⭐⭐⭐
    - 来源：来源名
-   - 摘要：一句话摘要
+   - 摘要：一句话摘要（50 字以内）
    - 👉 [阅读原文](链接)
 
-## ⚡ 技术更新
+...
+
+## ⚡ 技术更新（10 条）
 
 ...
 
-## 💼 行业应用
+## 💼 行业应用（10 条）
 
 ...
 
-## 📄 研究论文
+## 📄 研究论文（10 条）
 
 ...
+
+## 📰 订阅源精选（各 10 条）
+
+### 智语观潮（10 条）
+1. **标题** - 摘要...
+
+### AI 趋势（10 条）
+1. **标题** - 摘要...
+
+### Inference Brief（10 条）
+1. **标题** - 摘要...
 
 ---
 
@@ -98,22 +112,23 @@ def main():
     sources = {
         'TrendRadar': read_file('output/trend_radar.md'),
         'AI Daily Digest': read_file('output/ai_daily_digest.md'),
-        '爱窝啦': read_file('output/subscribes/爱窝啦 AI 日报.md'),
-        'AI 趋势': read_file('output/subscribes/AI 趋势.md'),
         '智语观潮': read_file('output/subscribes/智语观潮.md'),
-        'Inference Brief': read_file('output/subscribes/Inference Brief.md')
+        'AI 趋势': read_file('output/subscribes/AI 趋势.md'),
+        'Inference Brief': read_file('output/subscribes/Inference Brief.md'),
     }
     
     # 过滤空内容
     sources = {k: v for k, v in sources.items() if v and len(v) > 50}
     
     print(f"📚 读取到 {len(sources)} 个有效数据源")
+    for name, content in sources.items():
+        print(f"  - {name}: {len(content)} 字符")
     
     # 获取兴趣配置
     interests = os.environ.get('INTERESTS', 'AI,Agent,OpenClaw，大模型')
     
     # JARVIS 整合
-    report = jarvis_merge('\n\n'.join(sources.values()), interests)
+    report = jarvis_merge(list(sources.values()), interests)
     
     # 保存日报
     os.makedirs('output/full', exist_ok=True)
@@ -124,6 +139,7 @@ def main():
         f.write(report)
     
     print(f"✅ 日报已保存：{report_path}")
+    print(f"📊 预计输出：~50 条新闻（每个数据源 10 条）")
 
 if __name__ == '__main__':
     main()

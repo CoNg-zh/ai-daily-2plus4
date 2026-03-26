@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-OpenClaw 心跳检查 - 检查 GitHub 新日报并推送到飞书
+OpenClaw 心跳检查 - 检查 GitHub 新日报并通过 message 工具推送到飞书
 """
 
 import os
-import requests
-from datetime import datetime, timedelta
+import subprocess
+from datetime import datetime
 
 def check_new_report():
     """检查是否有新的日报"""
@@ -29,62 +29,50 @@ def parse_report(report_path):
     with open(report_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # 提取各分类内容（简化版）
+    # 提取标题和链接
     lines = content.split('\n')
-    sections = {}
-    current_section = 'intro'
-    sections[current_section] = []
+    message = "🤖 **AI Daily 2+4** - " + datetime.now().strftime('%Y-%m-%d') + "\n\n"
     
+    # 提取各分类内容
+    current_section = None
     for line in lines:
         if line.startswith('## '):
             current_section = line.replace('## ', '').strip()
-            sections[current_section] = []
-        elif line.strip() and not line.startswith('#') and not line.startswith('**'):
-            sections[current_section].append(line.strip())
-    
-    # 构建飞书消息
-    message = "🤖 **AI Daily 2+4** - " + datetime.now().strftime('%Y-%m-%d') + "\n\n"
-    
-    for section_name, items in sections.items():
-        if section_name == 'intro' or not items:
-            continue
-        
-        emoji_map = {
-            '🔥 重磅新闻': '🔥',
-            '⚡ 技术更新': '⚡',
-            '💼 行业应用': '💼',
-            '📄 研究论文': '📄'
-        }
-        emoji = emoji_map.get(section_name, '📌')
-        
-        message += f"{emoji} **{section_name}**\n"
-        for item in items[:5]:  # 每个分类最多 5 条
-            if item.startswith('- ') or item.startswith('1.'):
-                message += f"  {item}\n"
-        message += "\n"
+            if current_section.startswith('🔥') or current_section.startswith('⚡') or current_section.startswith('💼') or current_section.startswith('📄'):
+                message += f"\n{current_section}\n"
+        elif line.startswith('1. **') and current_section:
+            # 提取第一条新闻
+            title = line.split('**')[1] if '**' in line else line
+            message += f"  {line}\n"
+            break
     
     message += "\n📊 查看完整日报：https://github.com/CoNg-zh/ai-daily-2plus4/tree/main/output/full"
     
     return message
 
 def send_to_feishu(message):
-    """
-    通过 OpenClaw message 工具发送到飞书
-    
-    在 OpenClaw 环境中，这会触发 message 工具调用
-    实际发送由 OpenClaw Gateway 处理
-    """
+    """通过 OpenClaw message 工具发送到飞书"""
     print(f"📤 准备发送飞书消息...")
-    print(f"消息预览：{message[:200]}...")
+    print(f"消息内容：{message[:200]}...")
     
-    # 输出特殊标记，OpenClaw 会捕获并处理
-    print("\n=== FEISHU_MESSAGE_START ===")
-    print(message)
-    print("=== FEISHU_MESSAGE_END ===\n")
-    
-    # 在实际 OpenClaw 环境中，这里会调用 message 工具
-    # 由于脚本是在 cron 中运行，需要通过会话发送
-    return True
+    # 调用 message 工具，使用 main 账号
+    try:
+        result = subprocess.run(
+            ['openclaw', 'message', 'send', '--channel', 'feishu', '--account', 'main', '--target', 'user:ou_9c5ba4ecd1c6fc7fe89dfb99caad65cf', '-m', message],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode == 0:
+            print("✅ 飞书推送成功！")
+            return True
+        else:
+            print(f"❌ 飞书推送失败：{result.stderr}")
+            return False
+    except Exception as e:
+        print(f"❌ 推送异常：{e}")
+        return False
 
 def main():
     """主函数"""
@@ -107,7 +95,7 @@ def main():
         # 标记已发送
         with open(report_path + '.sent', 'w') as f:
             f.write(datetime.now().isoformat())
-        print("✅ 推送成功！")
+        print("✅ 推送完成！")
     else:
         print("❌ 推送失败")
 
