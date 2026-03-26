@@ -66,7 +66,15 @@ jobs:
         DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
       run: |
         cd ai-daily-digest
-        python scripts/digest.py --hours 24 --top-n 15 --lang en --output ../output/ai_daily_digest.md
+        if [ -f scripts/digest.py ]; then
+          python scripts/digest.py --hours 24 --top-n 15 --lang en --output ../output/ai_daily_digest.md
+        elif [ -f digest.py ]; then
+          python digest.py --hours 24 --top-n 15 --lang en --output ../output/ai_daily_digest.md
+        else
+          echo "⚠️ AI Daily Digest script not found, creating placeholder..."
+          echo "# AI Daily Digest - $(date +%Y-%m-%d)" > ../output/ai_daily_digest.md
+          echo "No digest script available." >> ../output/ai_daily_digest.md
+        fi
     
     - name: Upload Output
       uses: actions/upload-artifact@v4
