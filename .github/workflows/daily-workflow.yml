@@ -66,6 +66,7 @@ jobs:
         DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
       run: |
         cd ai-daily-digest
+        mkdir -p ../output
         if [ -f scripts/digest.py ]; then
           python scripts/digest.py --hours 24 --top-n 15 --lang en --output ../output/ai_daily_digest.md
         elif [ -f digest.py ]; then
