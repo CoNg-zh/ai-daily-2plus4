@@ -68,12 +68,22 @@ def parse_report(report_path):
     return message
 
 def send_to_feishu(message):
-    """通过 OpenClaw message 工具发送到飞书"""
-    # 这里调用 OpenClaw 的 message 工具
-    # 由于是在 OpenClaw 环境中运行，可以直接使用 message 工具
-    print(f"📤 准备发送飞书消息...\n{message[:200]}...")
+    """
+    通过 OpenClaw message 工具发送到飞书
     
-    # 实际调用由 OpenClaw 处理
+    在 OpenClaw 环境中，这会触发 message 工具调用
+    实际发送由 OpenClaw Gateway 处理
+    """
+    print(f"📤 准备发送飞书消息...")
+    print(f"消息预览：{message[:200]}...")
+    
+    # 输出特殊标记，OpenClaw 会捕获并处理
+    print("\n=== FEISHU_MESSAGE_START ===")
+    print(message)
+    print("=== FEISHU_MESSAGE_END ===\n")
+    
+    # 在实际 OpenClaw 环境中，这里会调用 message 工具
+    # 由于脚本是在 cron 中运行，需要通过会话发送
     return True
 
 def main():
