@@ -117,6 +117,10 @@ def main():
         '智语观潮': read_file('output/subscribes/智语观潮.md'),
     }
     
+    # 如果智语观潮文件不存在，尝试其他可能的位置
+    if not sources['智语观潮']:
+        sources['智语观潮'] = read_file('output/智语观潮.md')
+    
     # 过滤空内容
     sources = {k: v for k, v in sources.items() if v and len(v) > 50}
     

@@ -96,7 +96,7 @@ jobs:
     - name: Install dependencies
       run: pip install feedparser requests beautifulsoup4
     
-    - name: Fetch 4 Subscribes
+    - name: Fetch RSS Subscribes
       env:
         OUTPUT_DIR: output/subscribes
       run: |
