@@ -21,6 +21,8 @@ def read_file(path):
 def jarvis_merge(all_contents, interests=None):
     """JARVIS 智能整合 - 每个数据源输出 10 条精选"""
     
+    sources_list = '\n\n'.join(all_contents)
+    
     prompt = f"""你是一名专业的 AI 资讯编辑 JARVIS。
 
 请整合以下多个来源的 AI 新闻，生成一份详细版日报。
@@ -38,7 +40,7 @@ def jarvis_merge(all_contents, interests=None):
 
 ## 数据来源
 
-{'\n\n'.join(all_contents)[:15000]}
+{sources_list[:15000]}
 
 ## 输出格式
 
