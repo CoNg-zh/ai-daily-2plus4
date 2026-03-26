@@ -22,8 +22,9 @@ wheels/
 .installed.cfg
 *.egg
 
-# Output
+# Output (except full reports)
 output/
+!output/full/
 *.log
 
 # Environment
