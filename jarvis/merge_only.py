@@ -127,7 +127,8 @@ def main():
         f.write(report)
     
     print(f"✅ 日报已保存：{report_path}")
-    print(report_path)  # 输出给 GitHub Actions
+    # GitHub Actions output 需要特殊格式
+    print(f"report_path={report_path}")
     return report_path
 
 if __name__ == '__main__':

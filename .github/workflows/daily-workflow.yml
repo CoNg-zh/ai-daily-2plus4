@@ -145,7 +145,7 @@ jobs:
         DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         INTERESTS: ${{ secrets.INTERESTS }}
       run: |
-        REPORT_PATH=$(python jarvis/merge_only.py)
+        REPORT_PATH=$(python jarvis/merge_only.py | grep "^report_path=" | cut -d'=' -f2)
         echo "report_path=$REPORT_PATH" >> $GITHUB_OUTPUT
     
     - name: Commit Full Report
