@@ -84,6 +84,15 @@ def generate_report(all_items, output_dir):
     """生成各订阅源日报"""
     os.makedirs(output_dir, exist_ok=True)
     
+    # 如果没有任何内容，创建占位文件
+    if not all_items:
+        for source in SOURCES:
+            safe_name = source['name'].replace(' ', '_').replace('/', '_')
+            path = os.path.join(output_dir, f'{safe_name}.md')
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(f"# {source['name']} - {datetime.now().strftime('%Y-%m-%d')}\n\n暂无内容\n")
+        return
+    
     # 按来源分组
     by_source = {}
     for item in all_items:
