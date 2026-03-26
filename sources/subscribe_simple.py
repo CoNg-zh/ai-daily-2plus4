@@ -14,18 +14,8 @@ SOURCES = [
         'type': 'rss',
         'rss_url': 'https://ai.daily.yangsir.net/rss.xml',  # ✅ 已验证可用
     },
-    # AI 趋势：RSS 地址 404，暂不配置
-    # {
-    #     'name': 'AI 趋势',
-    #     'type': 'rss',
-    #     'rss_url': 'https://www.aitrend.us/feed.json',
-    # },
-    # Inference Brief：RSS 地址 403，暂不配置
-    # {
-    #     'name': 'Inference Brief',
-    #     'type': 'rss',
-    #     'rss_url': 'https://inferencebrief.ai/feed.json',
-    # },
+    # AI 趋势：RSS 不可用（404），暂不配置
+    # Inference Brief：RSS 不可用（403），暂不配置
 ]
 
 def fetch_rss(rss_url):
